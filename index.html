@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Công cụ đọc vạch màu điện trở 4, 5, 6 vạch miễn phí: chọn màu ra giá trị Ohm, sai số, hệ số nhiệt. Tra ngược từ giá trị ra màu.">
+<meta property="og:title" content="Đọc vạch màu điện trở">
+<meta property="og:description" content="Chọn màu từng vạch điện trở để ra giá trị, sai số và hệ số nhiệt.">
+<meta property="og:type" content="website">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Đọc vạch màu điện trở</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Be+Vietnam+Pro:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one bench panel — resistor drawing on top, band palette under it, result readout; reverse lookup below */
+:root {
+  --bg: #eceff3;
+  --surface: #ffffff;
+  --sunk: #f4f6f9;
+  --ink: #17202d;
+  --muted: #5a6575;
+  --line: #d3d9e2;
+  --accent: #1c5cc2;
+  --accent-ink: #ffffff;
+  --lead: #9aa3ae;
+  --warn: #b5501d;
+  --f-display: "Chakra Petch", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Be Vietnam Pro", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e131a; --surface: #161d27; --sunk: #111821; --ink: #e5eaf1; --muted: #93a0b3;
+    --line: #2b3646; --accent: #5b94ee; --accent-ink: #0b1220; --lead: #6d7684; --warn: #f08a55;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e131a; --surface: #161d27; --sunk: #111821; --ink: #e5eaf1; --muted: #93a0b3;
+  --line: #2b3646; --accent: #5b94ee; --accent-ink: #0b1220; --lead: #6d7684; --warn: #f08a55;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--f-body); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 48px;
+}
+.wrap { max-width: 920px; margin: 0 auto; display: grid; gap: 20px; }
+header h1 { font-family: var(--f-display); font-weight: 700; font-size: clamp(26px, 4.4vw, 38px); margin: 0; text-wrap: balance; }
+header p { margin: 4px 0 0; color: var(--muted); max-width: 62ch; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px; display: grid; gap: 18px; min-width: 0; }
+h2 { font-family: var(--f-display); font-weight: 600; font-size: 19px; margin: 0; }
+.label { font-family: var(--f-display); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin: 0 0 8px; }
+.top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; }
+.seg { display: inline-grid; grid-auto-flow: column; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { font: 500 14px var(--f-body); color: var(--ink); background: var(--surface); border: 0; border-right: 1px solid var(--line); padding: 8px 14px; cursor: pointer; }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.resistor-box { overflow-x: auto; }
+.resistor { width: 100%; min-width: 320px; height: auto; display: block; }
+.resistor .band { cursor: pointer; }
+.resistor text { font: 600 12px var(--f-mono); fill: var(--muted); }
+.resistor .cap { font: 500 10px var(--f-body); }
+.palette { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; }
+.sw {
+  display: flex; align-items: center; gap: 8px; text-align: left;
+  font: 500 13px var(--f-body); color: var(--ink); background: var(--sunk);
+  border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; cursor: pointer; min-width: 0;
+}
+.sw i { width: 18px; height: 18px; border-radius: 4px; flex: none; border: 1px solid rgba(0,0,0,.25); }
+.sw small { display: block; font: 400 11px var(--f-mono); color: var(--muted); }
+.sw[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.sw:disabled { opacity: .3; cursor: not-allowed; }
+.sw:not(:disabled):hover { border-color: var(--accent); }
+.result { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 2fr); gap: 16px; align-items: end; border-top: 1px solid var(--line); padding-top: 16px; }
+@media (max-width: 640px) { .result { grid-template-columns: minmax(0, 1fr); } }
+.big { font-family: var(--f-display); font-weight: 700; font-size: clamp(42px, 8vw, 60px); line-height: 1; font-variant-numeric: tabular-nums; }
+.big small { font-size: .45em; color: var(--muted); font-weight: 600; margin-left: 4px; }
+.formula { font: 400 13px var(--f-mono); color: var(--muted); margin: 8px 0 0; overflow-wrap: anywhere; }
+.kv { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; margin: 0; }
+@media (max-width: 420px) { .kv { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.kv > div { background: var(--surface); padding: 10px 12px; min-width: 0; }
+.kv dt { font-size: 12px; color: var(--muted); }
+.kv dd { margin: 2px 0 0; font: 600 15px var(--f-mono); overflow-wrap: anywhere; }
+.hint { font-size: 13px; color: var(--muted); margin: 0; }
+.rev { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; }
+.rev input { font: 500 17px var(--f-mono); color: var(--ink); background: var(--sunk); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; width: 100%; }
+.chips { display: grid; gap: 10px; }
+.chip { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; background: var(--sunk); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+.chip .n { font: 600 13px var(--f-display); min-width: 60px; }
+.chip .bars { display: flex; gap: 4px; }
+.chip .bars i { width: 14px; height: 26px; border-radius: 3px; border: 1px solid rgba(0,0,0,.25); }
+.chip .names { font-size: 13px; color: var(--muted); flex: 1 1 200px; min-width: 0; }
+.chip button { font: 500 13px var(--f-body); color: var(--accent); background: transparent; border: 1px solid var(--accent); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+.err { color: var(--warn); font-size: 14px; margin: 0; }
+.mnemonic { font-size: 13px; color: var(--muted); margin: 0; }
+.mnemonic b { color: var(--ink); }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Đọc vạch màu điện trở</h1>
+    <p>Chọn màu từng vạch trên điện trở để ra giá trị, sai số và hệ số nhiệt. Hoặc nhập giá trị để tra ngược ra màu.</p>
+  </header>
+
+  <section class="panel" aria-labelledby="h-main">
+    <div class="top">
+      <h2 id="h-main">Chọn màu</h2>
+      <div class="seg" role="group" aria-label="Số vạch">
+        <button type="button" data-n="4" aria-pressed="true">4 vạch</button>
+        <button type="button" data-n="5" aria-pressed="false">5 vạch</button>
+        <button type="button" data-n="6" aria-pressed="false">6 vạch</button>
+      </div>
+    </div>
+
+    <div class="resistor-box">
+      <svg class="resistor" id="res" viewBox="0 0 440 140" role="img" aria-label="Hình điện trở với các vạch màu"></svg>
+    </div>
+
+    <div>
+      <p class="label" id="pal-label">Vạch 1 · chữ số thứ nhất</p>
+      <div class="palette" id="pal" role="group" aria-labelledby="pal-label"></div>
+      <p class="hint" style="margin-top:8px">Bấm vào một vạch trên hình để đổi màu vạch đó. Vạch sai số thường cách xa nhóm còn lại, đọc từ phía ngược với nó.</p>
+    </div>
+
+    <div class="result" aria-live="polite">
+      <div>
+        <div class="big" id="val">4,7<small>kΩ</small></div>
+        <p class="formula" id="formula"></p>
+      </div>
+      <dl class="kv">
+        <div><dt>Sai số</dt><dd id="o-tol">±5%</dd></div>
+        <div><dt>Khoảng giá trị</dt><dd id="o-range">–</dd></div>
+        <div id="tc-cell"><dt>Hệ số nhiệt</dt><dd id="o-tc">–</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-rev">
+    <h2 id="h-rev">Từ giá trị ra màu</h2>
+    <div class="rev">
+      <input id="rev" type="text" value="220" autocomplete="off" spellcheck="false" aria-label="Giá trị điện trở" aria-describedby="rev-hint">
+      <span class="hint">Ω</span>
+    </div>
+    <p class="hint" id="rev-hint">Nhập 220, 4.7k, 4k7, 1M, 0.47…</p>
+    <p class="err" id="rev-err" hidden></p>
+    <div class="chips" id="chips"></div>
+    <p class="mnemonic">Mẹo nhớ thứ tự 0–9: <b>Đen Nâu Đỏ Cam Vàng Lục Lam Tím Xám Trắng</b>.</p>
+  </section>
+</div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  // digit, multiplier exponent, tolerance %, tempco ppm/K
+  const C = [
+    { k: 'black',  vi: 'Đen',      hex: '#1b1b1b', d: 0, m: 0,  tc: 250 },
+    { k: 'brown',  vi: 'Nâu',      hex: '#7a4a21', d: 1, m: 1,  t: 1,    tc: 100 },
+    { k: 'red',    vi: 'Đỏ',       hex: '#d42a20', d: 2, m: 2,  t: 2,    tc: 50 },
+    { k: 'orange', vi: 'Cam',      hex: '#ee7a1a', d: 3, m: 3,  t: 0.05, tc: 15 },
+    { k: 'yellow', vi: 'Vàng',     hex: '#f2cd1d', d: 4, m: 4,  t: 0.02, tc: 25 },
+    { k: 'green',  vi: 'Lục',      hex: '#2f9a3e', d: 5, m: 5,  t: 0.5,  tc: 20 },
+    { k: 'blue',   vi: 'Lam',      hex: '#2563c9', d: 6, m: 6,  t: 0.25, tc: 10 },
+    { k: 'violet', vi: 'Tím',      hex: '#7d3fb5', d: 7, m: 7,  t: 0.1,  tc: 5 },
+    { k: 'grey',   vi: 'Xám',      hex: '#8d8d8d', d: 8, m: 8,  t: 0.05, tc: 1 },
+    { k: 'white',  vi: 'Trắng',    hex: '#f4f4f4', d: 9, m: 9 },
+    { k: 'gold',   vi: 'Nhũ vàng', hex: '#c9a13b', m: -1, t: 5 },
+    { k: 'silver', vi: 'Nhũ bạc',  hex: '#b9bec5', m: -2, t: 10 },
+    { k: 'none',   vi: 'Không màu', hex: 'transparent', t: 20 }
+  ];
+  const byK = Object.fromEntries(C.map(c => [c.k, c]));
+
+  const ROLES = {
+    4: ['d', 'd', 'm', 't'],
+    5: ['d', 'd', 'd', 'm', 't'],
+    6: ['d', 'd', 'd', 'm', 't', 'tc']
+  };
+  const ROLE_NAME = { d: 'chữ số', m: 'hệ số nhân', t: 'sai số', tc: 'hệ số nhiệt' };
+  const ORD = ['thứ nhất', 'thứ hai', 'thứ ba'];
+  const X = {
+    4: [128, 162, 196, 302],
+    5: [118, 148, 178, 208, 302],
+    6: [112, 139, 166, 193, 288, 318]
+  };
+
+  const state = { n: 4, active: 0, bands: { 4: ['yellow', 'violet', 'red', 'gold'], 5: ['yellow', 'violet', 'black', 'brown', 'brown'], 6: ['yellow', 'violet', 'black', 'brown', 'brown', 'brown'] } };
+
+  const allowed = (role, idx, c) => {
+    if (role === 'd') return c.d !== undefined && !(idx === 0 && c.d === 0);
+    if (role === 'm') return c.m !== undefined;
+    if (role === 't') return c.t !== undefined && (c.k !== 'none' || state.n === 4);
+    if (role === 'tc') return c.tc !== undefined;
+  };
+
+  const tidy = n => parseFloat(n.toPrecision(4)).toString().replace('.', ',');
+  const fmtOhm = v => {
+    if (v >= 1e9) return [tidy(v / 1e9), 'GΩ'];
+    if (v >= 1e6) return [tidy(v / 1e6), 'MΩ'];
+    if (v >= 1e3) return [tidy(v / 1e3), 'kΩ'];
+    return [tidy(v), 'Ω'];
+  };
+  const ohm = v => fmtOhm(v).join(' ');
+
+  function bandLabel(i) {
+    const role = ROLES[state.n][i];
+    const digitIdx = ROLES[state.n].slice(0, i).filter(r => r === 'd').length;
+    return `Vạch ${i + 1} · ${ROLE_NAME[role]}${role === 'd' ? ' ' + ORD[digitIdx] : ''}`;
+  }
+
+  function drawResistor() {
+    const n = state.n, bands = state.bands[n];
+    const body = n === 4 ? '#d9c39a' : '#8fb4d9'; // carbon film beige / metal film blue
+    const shape = 'M86 30 Q 86 22 100 22 L 136 22 Q 146 30 160 30 L 280 30 Q 294 30 304 22 L 340 22 Q 354 22 354 30 L 354 94 Q 354 102 340 102 L 304 102 Q 294 94 280 94 L 160 94 Q 146 94 136 102 L 100 102 Q 86 102 86 94 Z';
+    let s = `<defs><clipPath id="body-clip"><path d="${shape}"/></clipPath></defs>
+      <line x1="6" y1="62" x2="80" y2="62" stroke="var(--lead)" stroke-width="5" stroke-linecap="round"/>
+      <line x1="360" y1="62" x2="434" y2="62" stroke="var(--lead)" stroke-width="5" stroke-linecap="round"/>
+      <path d="${shape}"
+        fill="${body}" stroke="rgba(0,0,0,.25)" stroke-width="1.5"/>
+      <path d="M100 30 L 340 30" stroke="#ffffff" stroke-opacity=".35" stroke-width="5" stroke-linecap="round"/>`;
+    bands.forEach((k, i) => {
+      const x = X[n][i], c = byK[k];
+      if (k !== 'none') {
+        s += `<rect class="band" data-i="${i}" x="${x - 8}" y="20" width="16" height="84" fill="${c.hex}" clip-path="url(#body-clip)"/>`;
+      } else {
+        s += `<rect class="band" data-i="${i}" x="${x - 8}" y="20" width="16" height="84" fill="transparent" stroke="rgba(0,0,0,.4)" stroke-dasharray="3 3" clip-path="url(#body-clip)"/>`;
+      }
+      const role = ROLES[n][i];
+      const lab = role === 'd' ? c.d : role === 'm' ? '×' : role === 't' ? '±' : 'ppm';
+      s += `<text x="${x}" y="122" text-anchor="middle" ${i === state.active ? 'style="fill:var(--accent)"' : ''}>${lab}</text>`;
+      if (i === state.active) {
+        s += `<path d="M${x - 7} 8 L ${x + 7} 8 L ${x} 16 Z" fill="var(--accent)"/>`;
+      }
+    });
+    $('res').innerHTML = s;
+    $('res').querySelectorAll('.band').forEach(b => b.addEventListener('click', () => { state.active = +b.dataset.i; render(); }));
+  }
+
+  function chipText(c, role) {
+    if (role === 'd') return String(c.d);
+    if (role === 'm') return '×' + ohm(Math.pow(10, c.m)).replace('Ω', '').replace(' ', '');
+    if (role === 't') return '±' + String(c.t).replace('.', ',') + '%';
+    if (role === 'tc') return c.tc + ' ppm';
+  }
+
+  function drawPalette() {
+    const role = ROLES[state.n][state.active];
+    const cur = state.bands[state.n][state.active];
+    $('pal-label').textContent = bandLabel(state.active);
+    $('pal').innerHTML = C.map(c => {
+      const ok = allowed(role, state.active, c);
+      const style = c.k === 'none' ? 'background:transparent;border-style:dashed' : `background:${c.hex}`;
+      return `<button type="button" class="sw" data-k="${c.k}" aria-pressed="${c.k === cur}" ${ok ? '' : 'disabled'}>
+        <i style="${style}"></i><span>${c.vi}<small>${ok ? chipText(c, role) : '–'}</small></span></button>`;
+    }).join('');
+  }
+  $('pal').addEventListener('click', e => {
+    const b = e.target.closest('.sw'); if (!b || b.disabled) return;
+    state.bands[state.n][state.active] = b.dataset.k;
+    if (state.active < state.n - 1) state.active++;
+    render();
+  });
+
+  function compute() {
+    const n = state.n, bands = state.bands[n].map(k => byK[k]), roles = ROLES[n];
+    let digits = '', mult = 0, tol = null, tc = null;
+    roles.forEach((r, i) => {
+      if (r === 'd') digits += bands[i].d;
+      if (r === 'm') mult = bands[i].m;
+      if (r === 't') tol = bands[i].t;
+      if (r === 'tc') tc = bands[i].tc;
+    });
+    const R = parseInt(digits, 10) * Math.pow(10, mult);
+    return { R: Math.round(R * 1e6) / 1e6, digits, mult, tol, tc };
+  }
+
+  function render() {
+    // fix bands no longer valid
+    const roles = ROLES[state.n];
+    state.bands[state.n] = state.bands[state.n].map((k, i) => allowed(roles[i], i, byK[k]) ? k : (roles[i] === 't' ? 'gold' : roles[i] === 'm' ? 'black' : 'brown'));
+    if (state.active >= state.n) state.active = 0;
+    document.querySelectorAll('.seg button').forEach(b => b.setAttribute('aria-pressed', +b.dataset.n === state.n));
+    drawResistor(); drawPalette();
+
+    const r = compute();
+    const [num, unit] = fmtOhm(r.R);
+    $('val').innerHTML = `${num}<small>${unit}</small>`;
+    const names = state.bands[state.n].map(k => byK[k].vi).join(' – ');
+    $('formula').textContent = `${names}\n${r.digits} × 10^${r.mult} = ${r.R.toLocaleString('vi-VN')} Ω`;
+    $('formula').style.whiteSpace = 'pre-line';
+    $('o-tol').textContent = '±' + String(r.tol).replace('.', ',') + '%';
+    const lo = r.R * (1 - r.tol / 100), hi = r.R * (1 + r.tol / 100);
+    $('o-range').textContent = `${ohm(lo)} – ${ohm(hi)}`;
+    $('o-tc').textContent = r.tc ? `${r.tc} ppm/K` : 'Không có (cần 6 vạch)';
+  }
+
+  document.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => {
+    state.n = +b.dataset.n; state.active = 0; render();
+  }));
+
+  // Reverse lookup
+  function parseVal(raw) {
+    let s = raw.trim().toUpperCase().replace(/Ω|OHMS?|\s+/g, '').replace(',', '.');
+    let m;
+    if ((m = s.match(/^(\d+)([RKMG])(\d+)$/))) return parseFloat(`${m[1]}.${m[3]}`) * { R: 1, K: 1e3, M: 1e6, G: 1e9 }[m[2]];
+    if ((m = s.match(/^(\d*\.?\d+)([KMG]?)$/))) return parseFloat(m[1]) * { '': 1, K: 1e3, M: 1e6, G: 1e9 }[m[2]];
+    return NaN;
+  }
+  function encode(R, sig) {
+    let e = Math.floor(Math.log10(R)) - (sig - 1);
+    let mant = Math.round(R / Math.pow(10, e));
+    if (mant >= Math.pow(10, sig)) { mant = Math.round(mant / 10); e++; }
+    if (e < -2 || e > 9) return null;
+    const ds = String(mant).padStart(sig, '0').split('').map(Number);
+    if (ds[0] === 0) return null;
+    const multK = C.find(c => c.m === e).k;
+    const actual = mant * Math.pow(10, e);
+    return { keys: [...ds.map(d => C[d].k), multK], actual };
+  }
+  function renderRev() {
+    const R = parseVal($('rev').value);
+    const err = $('rev-err'), box = $('chips');
+    if (!(R > 0)) { err.textContent = 'Chưa đọc được giá trị. Thử dạng 220, 4.7k hoặc 4k7.'; err.hidden = false; box.innerHTML = ''; return; }
+    err.hidden = true;
+    const opts = [
+      { n: 4, sig: 2, tol: 'gold' },
+      { n: 5, sig: 3, tol: 'brown' }
+    ];
+    box.innerHTML = opts.map(o => {
+      const r = encode(R, o.sig);
+      if (!r) return `<div class="chip"><span class="n">${o.n} vạch</span><span class="names">Giá trị nằm ngoài dải mã màu.</span></div>`;
+      const keys = [...r.keys, o.tol];
+      const approx = Math.abs(r.actual - R) / R > 1e-9 ? ` (làm tròn thành ${ohm(r.actual)})` : '';
+      return `<div class="chip"><span class="n">${o.n} vạch</span>
+        <span class="bars">${keys.map(k => `<i style="background:${byK[k].hex}" title="${byK[k].vi}"></i>`).join('')}</span>
+        <span class="names">${keys.map(k => byK[k].vi).join(' – ')}${approx}</span>
+        <button type="button" data-n="${o.n}" data-keys="${keys.join(',')}">Dùng</button></div>`;
+    }).join('');
+  }
+  $('rev').addEventListener('input', renderRev);
+  $('chips').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    state.n = +b.dataset.n;
+    const keys = b.dataset.keys.split(',');
+    if (state.n === 5) state.bands[5] = keys;
+    else state.bands[4] = keys;
+    state.active = 0; render();
+    $('h-main').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  render(); renderRev();
+})();
+</script>
+</body>
+</html>
