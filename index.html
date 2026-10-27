@@ -3,12 +3,69 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Công cụ đọc vạch màu điện trở 4, 5, 6 vạch miễn phí: chọn màu ra giá trị Ohm, sai số, hệ số nhiệt. Tra ngược từ giá trị ra màu.">
-<meta property="og:title" content="Đọc vạch màu điện trở">
-<meta property="og:description" content="Chọn màu từng vạch điện trở để ra giá trị, sai số và hệ số nhiệt.">
+<meta name="description" content="Đọc điện trở online miễn phí: chọn vạch màu ra số điện trở (Ω), sai số, hệ số nhiệt cho điện trở 4, 5, 6 vạch. Đổi điện trở từ giá trị ra màu, kèm bảng màu và cách đọc.">
+<link rel="canonical" href="https://thanhluan1736-byte.github.io/doc-dien-tro/">
+<meta property="og:title" content="Đọc điện trở – Đổi vạch màu ra số điện trở">
+<meta property="og:description" content="Chọn màu từng vạch để ra số điện trở, sai số và hệ số nhiệt. Nhập giá trị để đổi ngược ra màu.">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://thanhluan1736-byte.github.io/doc-dien-tro/">
+<meta property="og:locale" content="vi_VN">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M1 16h6M25 16h6' stroke='%239aa3ae' stroke-width='3' stroke-linecap='round'/%3E%3Crect x='6' y='8' width='20' height='16' rx='5' fill='%23d9c39a'/%3E%3Crect x='10' y='8' width='3' height='16' fill='%23f2cd1d'/%3E%3Crect x='15' y='8' width='3' height='16' fill='%237d3fb5'/%3E%3Crect x='20' y='8' width='3' height='16' fill='%23d42a20'/%3E%3C/svg%3E">
 <style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
-<title>Đọc vạch màu điện trở</title>
+<title>Đọc điện trở – Đổi vạch màu ra số điện trở (4, 5, 6 vạch)</title>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "name": "Đọc điện trở",
+      "alternateName": ["Đổi điện trở", "Số điện trở", "Đọc vạch màu điện trở"],
+      "url": "https://thanhluan1736-byte.github.io/doc-dien-tro/",
+      "inLanguage": "vi"
+    },
+    {
+      "@type": "WebApplication",
+      "name": "Đọc điện trở – Đổi vạch màu ra số điện trở",
+      "url": "https://thanhluan1736-byte.github.io/doc-dien-tro/",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Mọi trình duyệt",
+      "inLanguage": "vi",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "VND" }
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Cách đọc điện trở 4 vạch màu?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Vạch 1 và 2 là hai chữ số, vạch 3 là hệ số nhân (số chữ số 0 thêm vào), vạch 4 là sai số. Ví dụ Vàng – Tím – Đỏ – Nhũ vàng = 47 × 100 = 4,7 kΩ ±5%." }
+        },
+        {
+          "@type": "Question",
+          "name": "Cách đọc điện trở 5 vạch màu?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Vạch 1, 2, 3 là ba chữ số, vạch 4 là hệ số nhân, vạch 5 là sai số. Ví dụ Nâu – Đen – Đen – Đỏ – Nâu = 100 × 100 = 10 kΩ ±1%." }
+        },
+        {
+          "@type": "Question",
+          "name": "Làm sao biết vạch nào là vạch đầu tiên?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Vạch sai số (thường là nhũ vàng, nhũ bạc hoặc nâu) nằm cách xa nhóm vạch còn lại. Đặt vạch đó về bên phải rồi đọc từ trái sang. Vạch đầu tiên không bao giờ là đen, nhũ vàng hay nhũ bạc." }
+        },
+        {
+          "@type": "Question",
+          "name": "Đổi giá trị điện trở ra màu như thế nào?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Viết giá trị thành hai (hoặc ba) chữ số đầu nhân với lũy thừa của 10. Mỗi chữ số ứng với một màu, số mũ là màu hệ số nhân. Ví dụ 220 Ω = 22 × 10¹ = Đỏ – Đỏ – Nâu. Có thể nhập giá trị vào mục “Từ giá trị ra màu” để đổi tự động." }
+        },
+        {
+          "@type": "Question",
+          "name": "4k7, 1M, 0R47 trên điện trở nghĩa là gì?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Chữ R, k, M thay cho dấu phẩy và đơn vị: 4k7 = 4,7 kΩ; 1M = 1 MΩ; 0R47 = 0,47 Ω; 2R2 = 2,2 Ω." }
+        }
+      ]
+    }
+  ]
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Be+Vietnam+Pro:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
@@ -100,14 +157,30 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 .err { color: var(--warn); font-size: 14px; margin: 0; }
 .mnemonic { font-size: 13px; color: var(--muted); margin: 0; }
 .mnemonic b { color: var(--ink); }
+.guide h3 { font-family: var(--f-display); font-weight: 600; font-size: 16px; margin: 0 0 6px; }
+.guide p, .guide ol { margin: 0; }
+.guide ol { padding-left: 20px; }
+.guide li + li { margin-top: 4px; }
+.table-box { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
+.ctable { width: 100%; border-collapse: collapse; font-size: 14px; }
+.ctable th, .ctable td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.ctable tr:last-child td { border-bottom: 0; }
+.ctable th { font: 600 12px var(--f-display); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); background: var(--sunk); }
+.ctable td:not(:first-child) { font-family: var(--f-mono); font-size: 13px; }
+.ctable td:first-child i { display: inline-block; width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(0,0,0,.25); vertical-align: -2px; margin-right: 8px; }
+.faq details { border-top: 1px solid var(--line); padding: 10px 0; }
+.faq details:last-child { padding-bottom: 0; }
+.faq summary { cursor: pointer; font-weight: 600; }
+.faq details p { margin: 6px 0 0; color: var(--muted); }
+footer { font-size: 13px; color: var(--muted); text-align: center; }
 </style>
 
 </head>
 <body>
 <div class="wrap">
   <header>
-    <h1>Đọc vạch màu điện trở</h1>
-    <p>Chọn màu từng vạch trên điện trở để ra giá trị, sai số và hệ số nhiệt. Hoặc nhập giá trị để tra ngược ra màu.</p>
+    <h1>Đọc điện trở theo vạch màu</h1>
+    <p>Chọn màu từng vạch để đổi ra số điện trở (Ω), sai số và hệ số nhiệt cho điện trở 4, 5, 6 vạch. Hoặc nhập giá trị để đổi điện trở ngược ra màu.</p>
   </header>
 
   <section class="panel" aria-labelledby="h-main">
@@ -144,7 +217,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
   </section>
 
   <section class="panel" aria-labelledby="h-rev">
-    <h2 id="h-rev">Từ giá trị ra màu</h2>
+    <h2 id="h-rev">Đổi điện trở từ giá trị ra màu</h2>
     <div class="rev">
       <input id="rev" type="text" value="220" autocomplete="off" spellcheck="false" aria-label="Giá trị điện trở" aria-describedby="rev-hint">
       <span class="hint">Ω</span>
@@ -154,6 +227,77 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
     <div class="chips" id="chips"></div>
     <p class="mnemonic">Mẹo nhớ thứ tự 0–9: <b>Đen Nâu Đỏ Cam Vàng Lục Lam Tím Xám Trắng</b>.</p>
   </section>
+
+  <section class="panel guide" aria-labelledby="h-guide">
+    <h2 id="h-guide">Cách đọc điện trở</h2>
+    <div>
+      <h3>Điện trở 4 vạch</h3>
+      <ol>
+        <li>Vạch 1 và vạch 2: hai chữ số đầu.</li>
+        <li>Vạch 3: hệ số nhân, tức số chữ số 0 thêm vào sau (nhũ vàng ×0,1; nhũ bạc ×0,01).</li>
+        <li>Vạch 4: sai số.</li>
+      </ol>
+      <p style="margin-top:6px">Ví dụ: <b>Vàng – Tím – Đỏ – Nhũ vàng</b> = 47 × 100 = <b>4,7 kΩ ±5%</b>.</p>
+    </div>
+    <div>
+      <h3>Điện trở 5 vạch và 6 vạch</h3>
+      <p>Ba vạch đầu là ba chữ số, vạch 4 là hệ số nhân, vạch 5 là sai số. Điện trở 6 vạch có thêm vạch cuối là hệ số nhiệt (ppm/K). Ví dụ: <b>Nâu – Đen – Đen – Đỏ – Nâu</b> = 100 × 100 = <b>10 kΩ ±1%</b>.</p>
+    </div>
+    <div>
+      <h3>Bảng màu điện trở</h3>
+      <div class="table-box">
+        <table class="ctable">
+          <thead><tr><th>Màu</th><th>Chữ số</th><th>Hệ số nhân</th><th>Sai số</th><th>Hệ số nhiệt</th></tr></thead>
+          <tbody>
+            <tr><td><i style="background:#1b1b1b"></i>Đen</td><td>0</td><td>×1</td><td>–</td><td>250 ppm</td></tr>
+            <tr><td><i style="background:#7a4a21"></i>Nâu</td><td>1</td><td>×10</td><td>±1%</td><td>100 ppm</td></tr>
+            <tr><td><i style="background:#d42a20"></i>Đỏ</td><td>2</td><td>×100</td><td>±2%</td><td>50 ppm</td></tr>
+            <tr><td><i style="background:#ee7a1a"></i>Cam</td><td>3</td><td>×1k</td><td>±0,05%</td><td>15 ppm</td></tr>
+            <tr><td><i style="background:#f2cd1d"></i>Vàng</td><td>4</td><td>×10k</td><td>±0,02%</td><td>25 ppm</td></tr>
+            <tr><td><i style="background:#2f9a3e"></i>Lục</td><td>5</td><td>×100k</td><td>±0,5%</td><td>20 ppm</td></tr>
+            <tr><td><i style="background:#2563c9"></i>Lam</td><td>6</td><td>×1M</td><td>±0,25%</td><td>10 ppm</td></tr>
+            <tr><td><i style="background:#7d3fb5"></i>Tím</td><td>7</td><td>×10M</td><td>±0,1%</td><td>5 ppm</td></tr>
+            <tr><td><i style="background:#8d8d8d"></i>Xám</td><td>8</td><td>×100M</td><td>±0,05%</td><td>1 ppm</td></tr>
+            <tr><td><i style="background:#f4f4f4"></i>Trắng</td><td>9</td><td>×1G</td><td>–</td><td>–</td></tr>
+            <tr><td><i style="background:#c9a13b"></i>Nhũ vàng</td><td>–</td><td>×0,1</td><td>±5%</td><td>–</td></tr>
+            <tr><td><i style="background:#b9bec5"></i>Nhũ bạc</td><td>–</td><td>×0,01</td><td>±10%</td><td>–</td></tr>
+            <tr><td><i style="background:transparent;border-style:dashed"></i>Không màu</td><td>–</td><td>–</td><td>±20%</td><td>–</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div>
+      <h3>Số điện trở thông dụng và màu</h3>
+      <div class="table-box">
+        <table class="ctable">
+          <thead><tr><th>Giá trị</th><th>4 vạch (±5%)</th></tr></thead>
+          <tbody>
+            <tr><td>100 Ω</td><td>Nâu – Đen – Nâu – Nhũ vàng</td></tr>
+            <tr><td>220 Ω</td><td>Đỏ – Đỏ – Nâu – Nhũ vàng</td></tr>
+            <tr><td>330 Ω</td><td>Cam – Cam – Nâu – Nhũ vàng</td></tr>
+            <tr><td>1 kΩ</td><td>Nâu – Đen – Đỏ – Nhũ vàng</td></tr>
+            <tr><td>4,7 kΩ</td><td>Vàng – Tím – Đỏ – Nhũ vàng</td></tr>
+            <tr><td>10 kΩ</td><td>Nâu – Đen – Cam – Nhũ vàng</td></tr>
+            <tr><td>100 kΩ</td><td>Nâu – Đen – Vàng – Nhũ vàng</td></tr>
+            <tr><td>1 MΩ</td><td>Nâu – Đen – Lục – Nhũ vàng</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel faq" aria-labelledby="h-faq">
+    <h2 id="h-faq">Câu hỏi thường gặp</h2>
+    <div>
+      <details><summary>Làm sao biết vạch nào là vạch đầu tiên?</summary><p>Vạch sai số (thường là nhũ vàng, nhũ bạc hoặc nâu) nằm cách xa nhóm vạch còn lại. Đặt vạch đó về bên phải rồi đọc từ trái sang. Vạch đầu tiên không bao giờ là đen, nhũ vàng hay nhũ bạc.</p></details>
+      <details><summary>Đổi giá trị điện trở ra màu như thế nào?</summary><p>Viết giá trị thành hai (hoặc ba) chữ số đầu nhân với lũy thừa của 10. Mỗi chữ số ứng với một màu, số mũ là màu hệ số nhân. Ví dụ 220 Ω = 22 × 10¹ = Đỏ – Đỏ – Nâu. Nhập giá trị vào mục “Đổi điện trở từ giá trị ra màu” ở trên để đổi tự động.</p></details>
+      <details><summary>4k7, 1M, 0R47 trên điện trở nghĩa là gì?</summary><p>Chữ R, k, M thay cho dấu phẩy và đơn vị: 4k7 = 4,7 kΩ; 1M = 1 MΩ; 0R47 = 0,47 Ω; 2R2 = 2,2 Ω.</p></details>
+      <details><summary>Điện trở chỉ có một vạch đen là gì?</summary><p>Đó là điện trở 0 Ω (jumper), dùng như một đoạn dây nối trên mạch.</p></details>
+      <details><summary>Điện trở 4 vạch và 5 vạch khác nhau thế nào?</summary><p>Điện trở 4 vạch (thường thân màu be, sai số ±5%) có hai chữ số. Điện trở 5 vạch (thường thân xanh, sai số ±1% hoặc nhỏ hơn) có ba chữ số nên chính xác hơn.</p></details>
+    </div>
+  </section>
+
+  <footer>Công cụ đọc điện trở, đổi điện trở và tra số điện trở miễn phí, chạy ngay trên trình duyệt.</footer>
 </div>
 
 <script>
